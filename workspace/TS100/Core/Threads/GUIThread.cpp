@@ -514,22 +514,18 @@ static void gui_solderingMode(uint8_t jumpToSleep) {
 		OLED::setFont(0);
 		// Draw in the screen details
 		if (systemSettings.detailedSoldering) {
+			gui_drawTipTemp(true);
 			OLED::setFont(1);
-			OLED::print(SolderingAdvancedPowerPrompt);  // Power:
+			if (systemSettings.sensitivity && systemSettings.SleepTime) {
+				OLED::setCursor(47, 0);
+				display_countdown(sleepThres);
+			}
+			OLED::setCursor(67, 0);
 			OLED::printNumber(x10WattHistory.average() / 10, 2);
 			OLED::print(SymbolDot);
 			OLED::printNumber(x10WattHistory.average() % 10, 1);
 			OLED::print(SymbolWatts);
-
-			if (systemSettings.sensitivity && systemSettings.SleepTime) {
-				OLED::print(SymbolSpace);
-				display_countdown(sleepThres);
-			}
-
-			OLED::setCursor(0, 8);
-			OLED::print(SleepingTipAdvancedString);
-			gui_drawTipTemp(true);
-			OLED::print(SymbolSpace);
+			OLED::setCursor(67, 8);
 			printVoltage();
 			OLED::print(SymbolVolts);
 		} else {
@@ -806,16 +802,21 @@ void startGUITask(void const *argument __unused) {
 			if (tipTemp > 470) {
 				OLED::print(TipDisconnectedString);
 			} else {
-				OLED::print(IdleTipString);
-				gui_drawTipTemp(false);
-				OLED::print(IdleSetString);
+				OLED::setFont(0);
+				gui_drawTipTemp(true);
+				OLED::setFont(1);
+				OLED::setCursor(73, 0);
 				OLED::printNumber(systemSettings.SolderingTemp, 3);
+#ifdef ENABLED_FAHRENHEIT_SUPPORT
+            if (systemSettings.temperatureInF)
+                OLED::print(SymbolDegF);
+            else
+#endif
+			OLED::print(SymbolDegC);
 			}
-			OLED::setCursor(0, 8);
-
-			OLED::print(InputVoltageString);
+			OLED::setCursor(67, 8);
 			printVoltage();
-
+			OLED::print(SymbolVolts);
 		} else {
 			OLED::setFont(0);
 #ifdef OLED_FLIP
